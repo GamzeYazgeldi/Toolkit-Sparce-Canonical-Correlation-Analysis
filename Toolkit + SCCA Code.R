@@ -69,7 +69,7 @@ colnames(proteindrugmat) <- drugs[,];
 drug_list <-  list();
 for (i in 1:nrow(commonproteins)){   #for finding drugs (list) that targets commponproteins
   drug_list[[i]] <-  t(as.data.frame(result_hostbased[which(result_hostbased$host_protein_ids %in% commonproteins[i,]), 6]));
-  for (j in 1:length(drug_list[[i]])){   #componentteki her bir ilacın drugs'daki yerini bulup 1 yazılması için loop.
+  for (j in 1:length(drug_list[[i]])){   #componentteki her bir ilacÃ½n drugs'daki yerini bulup 1 yazÃ½lmasÃ½ iÃ§in loop.
     d_index <- which(drugs[,1] %in% drug_list[[i]][j]);
     proteindrugmat[i,d_index] <- 1;
   }
@@ -173,13 +173,13 @@ liste <- list()
 for(i in 1:ncomp){ #for listing all list
   for (i in 1:ncomp){  #for making list for each component
     # Component n: positive weights on targeting drugs
-    # componentlerin içerisindeki weightleri sıfır olan drugları bulunuyor
+    # componentlerin iÃ§erisindeki weightleri sÃ½fÃ½r olan druglarÃ½ bulunuyor
     nthcompd <- protein.scca[["u"]][which(abs(protein.scca[["u"]][,i]) !=0),i];
     a <- rownames(as.data.frame(nthcompd)); #each weights for each drugs
     nthcompd <- cbind(a,nthcompd); #row names are present in one column anymore
-    # bulunan drugları drugass(ilgili ortak proteinlerin ilaçlarıyla olan ikili tablo)de arıyorum
+    # bulunan druglarÃ½ drugass(ilgili ortak proteinlerin ilaÃ§larÃ½yla olan ikili tablo)de arÃ½yorum
     commonnd <- intersect(nthcompd[,1],drugass[,3]);
-    # bu drugların hedeflediği proteinlerini çekiyorum
+    # bu druglarÃ½n hedeflediÃ°i proteinlerini Ã§ekiyorum
     commonnd<- drugass[which(drugass[,3] %in% commonnd),c(2,3)];
     
     # positive weights on belonging pathways
@@ -283,12 +283,12 @@ for(i in 1:ncomp){   #loop for creating liste_protein
     common_pro_path <- intersect(e[1:length(e)],pathwayass[,1]);   #pathwayassde o proteinleri buluyor
     # bu proteinlere ait pathwayler bulunacak
     common_pro_path <- pathwayass[which(pathwayass[,1] %in% common_pro_path),c(1,3)];
-    count_associated_pathways <- count(common_pro_path[,1])  #bu protein pathwayass tablosunda kaç pathway ile tanımlanmış
+    count_associated_pathways <- count(common_pro_path[,1])  #bu protein pathwayass tablosunda kaÃ§ pathway ile tanÃ½mlanmÃ½Ã¾
     
     common_pro_drug <- intersect(e[1:length(e)],drugass[,2]); # bu proteini drugassde bul
-    common_pro_drug <- drugass[which(drugass[,2] %in% common_pro_drug),c(2,3)]; #bulunca protein idsi ve ilgili ilacı al
-    #kaç ilaçla etkileşmiş onu count et
-    count_associated_drugs <- count(common_pro_drug[,1]) #bu protein drugass tablosunda kaç drug ile tanımlanmış
+    common_pro_drug <- drugass[which(drugass[,2] %in% common_pro_drug),c(2,3)]; #bulunca protein idsi ve ilgili ilacÃ½ al
+    #kaÃ§ ilaÃ§la etkileÃ¾miÃ¾ onu count et
+    count_associated_drugs <- count(common_pro_drug[,1]) #bu protein drugass tablosunda kaÃ§ drug ile tanÃ½mlanmÃ½Ã¾
     
     liste_protein[[i]] <- data.frame(i,"",count_associated_pathways[,2],count_associated_drugs[,2],e[1:length(e)])
     colnames(liste_protein[[i]]) <- c("component number","component_score","number of associated pathways",
@@ -299,48 +299,3 @@ for(i in 1:ncomp){   #loop for creating liste_protein
 all_bipartite_protein <- do.call(rbind, liste_protein)
 write.csv2(all_bipartite_protein,file="Human-AllPathogen_20Components-PROTEIN.csv")
 
-
-
-# PART V: INTERPRETATION OF RESULTS
-# rho is correlation coefficient of each drug's varible set and pathway's variable set component 
-# 0 < rho < 1 
-# Drug ve pathway variable setleri arasındaki ilişkiyi maksimum gösteren component:
-max(protein.scca[["rho"]])
-max_corr_component <- which(protein.scca[["rho"]]==max(protein.scca[["rho"]])) 
-#8.ci component aralarındaki ilişkiyi en iyi (maximum) gösteren component.
-
-length(which(all_bipartite_cytoscape$`component number`=="1"))  #29 tane pathway var; bu componentte
-length(which(all_bipartite_drug$`component number`=="2"))   #38 tane ilaç var; bu componentte
-
-#2.ci componentteki protein:P07900
-length(which(pathway$V1=="P07900"))  #bu proteine ait 101 tane pathway bilgisi var
-length(which(drugass$host_protein_ids=="P07900"))  #bu proteine ait 49 tane ilaç var.
-
-#yani componentte çıkan proteine göre yapılmamış o ilaç ve pathway. bu okey.
-
-length(unique(all_bipartite_cytoscape$`pathway name`))
-length(unique(all_bipartite_cytoscape$`host protein ids`)) #956 tane çıktı.
-
-
-#her componentteki ilaç ve pathwayler 1den fazla proteinle ilişkili.
-b <- unique(all_bipartite_cytoscape[which(all_bipartite_cytoscape$`component number`=="1"),4])
-View(b)
-
-# TO FIND DRUG NAME, TARGETING PROTEIN NAME OF MAX CORRELATED COMPONENT.
-# For Herpesviridae:
-x <- all_bipartite_cytoscape[all_bipartite_cytoscape$`component number`==14,]
-herpes_table <- result_hostbased[which(result_hostbased$drug_ids %in% x$drugids), c(2,3,6,7)]
-View(unique(herpes_table$drug_name))
-write.csv2(unique(herpes_table$drug_name),file="herpes-drug.csv")
-
-y <-  all_bipartite_cytoscape[all_bipartite_cytoscape$`component number`==14,]
-write.csv2(unique(y$`pathway name`),file="herpes-pathwayname.csv")
-
-# For Orthomyxoviridae:
-x <- all_bipartite_cytoscape[all_bipartite_cytoscape$`component number`==4,]
-ortho_table <- result_hostbased[which(result_hostbased$drug_ids %in% x$drugids), c(2,3,6,7)]
-View(unique(ortho_table$drug_name))
-write.csv2(unique(ortho_table$drug_name),file="ortho-drug.csv")
-
-y <-  all_bipartite_cytoscape[all_bipartite_cytoscape$`component number`==4,]
-write.csv2(unique(y$`pathway name`),file="ortho-pathwayname.csv")
